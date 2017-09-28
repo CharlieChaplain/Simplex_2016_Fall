@@ -15,6 +15,7 @@ Date: 2017/05
 class Application
 {
 	MyMesh* m_pMesh = nullptr;
+	MyMesh* m_pMesh1 = nullptr;
 
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 private:
@@ -34,7 +35,7 @@ private:
 	sf::Window* m_pWindow = nullptr; //SFML window
 	Simplex::SystemSingleton* m_pSystem = nullptr; //Singleton of the system
 	Simplex::LightManager* m_pLightMngr = nullptr; //Light Manager of the system
-	Simplex::MeshManager* m_pMeshMngr = nullptr; //Mesh Manager
+	Simplex::MeshManager* m_pMeshMngr = nullptr; //MyMesh Manager
 	Simplex::CameraManager* m_pCameraMngr = nullptr; //Singleton for the camera manager
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application
