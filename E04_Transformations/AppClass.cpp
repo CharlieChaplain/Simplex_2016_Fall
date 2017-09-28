@@ -31,12 +31,17 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
+	// gets projection and view matrices from the camera manager
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix();
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix();
-	matrix4 m4Model;
+	
+	// m4Model will move all the blocks in the same way
+	static matrix4 m4Model;
 
 	matrix4 m4Scale = glm::scale(vector3(0.5f, 0.5f, 0.5f));
-	matrix4 m4Transform;
+	matrix4 m4Translate;
+
+	// the actual arrangement of blocks
 	uint invader[8][11] = {
 		{0,0,1,0,0,0,0,0,1,0,0},
 		{0,0,0,1,0,0,0,1,0,0,0},
@@ -47,18 +52,20 @@ void Application::Display(void)
 		{1,0,1,0,0,0,0,0,1,0,1},
 		{0,0,0,1,1,0,1,1,0,0,0}
 	};
+	
+	// Moves the blocks continually right and in a sinusoidal pattern
+	m4Model = glm::translate(m4Model, vector3(0.01f, glm::sin((float)timer / 20) / 20, 0));
+	timer++;
 
-	for (int x = 0; x < 8; x++) {
-		for (int y = 0; y < 11; y++) {
-			if (invader[x][y] == 1) {
-				m4Transform = glm::translate(vector3(x, y, 0));
-				m_pMesh->Render(m4Projection, m4View, m4Model* m4Transform * m4Scale);
+	// loops through invader to render the proper blocks
+	for (int x = 0; x < 11; x++) {
+		for (int y = 0; y < 8; y++) {
+			if (invader[y][x] == 1) {
+				m4Translate = glm::translate(vector3(x - 15, -y + 5, 0));
+				m_pMesh->Render(m4Projection, m4View, m4Model * m4Translate * m4Scale);
 			}
 		}
 	}
-
-	//m_pMesh->Render(m4Projection, m4View, m4Model * m4Scale);
-	//m4Transform = glm::translate(vector3());
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
