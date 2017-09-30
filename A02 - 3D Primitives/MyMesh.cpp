@@ -275,9 +275,33 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	float fHalfHeight = a_fHeight / 2.0f;
+	float fNumDegrees = 6.2832f / a_nSubdivisions; // number of radians per subdivision
+
+	vector3 point0(0, fHalfHeight, 0); // top point
+	vector3 point1(0, -fHalfHeight, 0); // bottom middle point
+	vector3* bottomPoints = new vector3[a_nSubdivisions]; // contains the bottom ring of remaining points
+
+	// poulates bottomPoints with the bottom ring of points
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		bottomPoints[i] = vector3(a_fRadius * glm::cos(i * fNumDegrees), -fHalfHeight, a_fRadius * glm::sin(i * fNumDegrees));
+	}
+
+	// makes all the tris
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		// if the index is at the end
+		if (i == a_nSubdivisions - 1) {
+			AddTri(bottomPoints[0], bottomPoints[i], point0);
+			AddTri(bottomPoints[i], bottomPoints[0], point1);
+		}
+		else {
+			AddTri(bottomPoints[i + 1], bottomPoints[i], point0);
+			AddTri(bottomPoints[i], bottomPoints[i + 1], point1);
+		}
+	}
+	
+	delete[] bottomPoints;
+	bottomPoints = nullptr;
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -299,9 +323,42 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	float fHalfHeight = a_fHeight / 2.0f;
+	float fNumDegrees = 6.2832f / a_nSubdivisions; // number of radians per subdivision
+
+	vector3 point0(0, fHalfHeight, 0); // top middle point
+	vector3 point1(0, -fHalfHeight, 0); // bottom middle point
+	vector3* topPoints = new vector3[a_nSubdivisions]; // contains the top ring of points
+	vector3* bottomPoints = new vector3[a_nSubdivisions]; // contains the bottom ring of points
+
+	// poulates both arrays with points
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		float x = glm::cos(i * fNumDegrees);
+		float z = glm::sin(i * fNumDegrees);
+
+		topPoints[i] = vector3(a_fRadius * x, fHalfHeight, a_fRadius * z);
+		bottomPoints[i] = vector3(a_fRadius * x, -fHalfHeight, a_fRadius * z);
+	}
+
+	// makes all faces
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		// if index is at the end
+		if (i == a_nSubdivisions - 1) {
+			AddTri(topPoints[0], topPoints[i], point0);								// makes top tri
+			AddTri(bottomPoints[i], bottomPoints[0], point1);						// makes bottom tri
+			AddQuad(bottomPoints[0], bottomPoints[i], topPoints[0], topPoints[i]);	// makes length face
+		}
+		else {
+			AddTri(topPoints[i + 1], topPoints[i], point0);									// makes top tri
+			AddTri(bottomPoints[i], bottomPoints[i + 1], point1);							// makes bottom tri
+			AddQuad(bottomPoints[i + 1], bottomPoints[i], topPoints[i + 1], topPoints[i]);	// makes length face
+		}
+	}
+
+	delete[] topPoints;
+	delete[] bottomPoints;
+	topPoints = nullptr;
+	bottomPoints = nullptr;
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -329,9 +386,50 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	float fHalfHeight = a_fHeight / 2.0f;
+	float fNumDegrees = 6.2832f / a_nSubdivisions; // number of radians per subdivision
+
+	vector3* topPointsOut = new vector3[a_nSubdivisions]; // contains the top outer ring of points
+	vector3* bottomPointsOut = new vector3[a_nSubdivisions]; // contains the bottom outer ring of points
+	vector3* topPointsIn = new vector3[a_nSubdivisions]; // contains the top inner ring of points
+	vector3* bottomPointsIn = new vector3[a_nSubdivisions]; // contains the bottom inner ring of points
+
+	// poulates all 4 arrays with their respective points
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		float x = glm::cos(i * fNumDegrees);
+		float z = glm::sin(i * fNumDegrees);
+
+		topPointsOut[i] = vector3(a_fOuterRadius * x, fHalfHeight, a_fOuterRadius * z);
+		bottomPointsOut[i] = vector3(a_fOuterRadius * x, -fHalfHeight, a_fOuterRadius * z);
+		topPointsIn[i] = vector3(a_fInnerRadius * x, fHalfHeight, a_fInnerRadius * z);
+		bottomPointsIn[i] = vector3(a_fInnerRadius * x, -fHalfHeight, a_fInnerRadius * z);
+	}
+
+	// makes all faces
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		// if index is at the end
+		if (i == a_nSubdivisions - 1) {
+			AddQuad(bottomPointsOut[0], bottomPointsOut[i], topPointsOut[0], topPointsOut[i]);		// makes outside face
+			AddQuad(bottomPointsIn[i], bottomPointsIn[0], topPointsIn[i], topPointsIn[0]);			// makes inside face
+			AddQuad(topPointsOut[0], topPointsOut[i], topPointsIn[0], topPointsIn[i]);				// makes top face
+			AddQuad(bottomPointsOut[i], bottomPointsOut[0], bottomPointsIn[i], bottomPointsIn[0]);	// makes bottom face
+		}
+		else {
+			AddQuad(bottomPointsOut[i + 1], bottomPointsOut[i], topPointsOut[i + 1], topPointsOut[i]);		// makes outside face
+			AddQuad(bottomPointsIn[i], bottomPointsIn[i + 1], topPointsIn[i], topPointsIn[i + 1]);			// makes inside face
+			AddQuad(topPointsOut[i + 1], topPointsOut[i], topPointsIn[i + 1], topPointsIn[i]);				// makes top face
+			AddQuad(bottomPointsOut[i], bottomPointsOut[i + 1], bottomPointsIn[i], bottomPointsIn[i + 1]);	// makes bottom face
+		}
+	}
+
+	delete[] topPointsOut;
+	delete[] bottomPointsOut;
+	delete[] topPointsIn;
+	delete[] bottomPointsIn;
+	topPointsOut = nullptr;
+	bottomPointsOut = nullptr;
+	topPointsIn = nullptr;
+	bottomPointsIn = nullptr;
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -386,9 +484,17 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	/*
+		x = r sin(u) cos(v)
+		y = r cos(u) sin(v)
+		z = r sin(v)
+
+		probably have to swap y and z
+
+		u ranges over full circle, v ranges -pi/2 to pi/2
+	*/
+
+	
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
