@@ -57,15 +57,27 @@ void Application::Display(void)
 	//calculate the current position
 	vector3 v3CurrentPos;
 	
+	static int fPrevStopIndex = 0;
+	static int fNextStopIndex = 1;
+	vector3 v3PrevStop = m_stopsList[fPrevStopIndex];
+	vector3 v3NextStop = m_stopsList[fNextStopIndex];
 
+	float fAnimationLasts = 2.0f;
+	float fPercent = MapValue(fTimer, 0.0f, fAnimationLasts, 0.0f, 1.0f);
 
-
-
-	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
-	//-------------------
+	v3CurrentPos = glm::lerp(v3PrevStop, v3NextStop, fPercent);
 	
-
+	if (fPercent > 1.0) {
+		if (fNextStopIndex >= m_stopsList.size() - 1)
+			fNextStopIndex = 0;
+		else
+			fNextStopIndex++;
+		if (fPrevStopIndex >= m_stopsList.size() - 1)
+			fPrevStopIndex = 0;
+		else
+			fPrevStopIndex++;
+		fTimer = 0;
+	}
 
 	
 	matrix4 m4Model = glm::translate(v3CurrentPos);

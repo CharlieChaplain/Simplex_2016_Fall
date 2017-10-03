@@ -94,6 +94,19 @@ void Application::Display(void)
 	// render the object
 	m_pMesh->Render(m4Projection, m4View, m4Model);
 	
+#pragma region Debugging Information
+	//Print info on the screen
+	uint nEmptyLines = 21;
+	for (uint i = 0; i < nEmptyLines; ++i)
+		m_pMeshMngr->PrintLine("");//Add a line on top
+								   //m_pMeshMngr->Print("						");
+	m_pMeshMngr->PrintLine(m_pSystem->GetAppName(), C_YELLOW);
+
+	//m_pMeshMngr->Print("						");
+	m_pMeshMngr->Print("FPS:");
+	m_pMeshMngr->Print(std::to_string(m_pSystem->GetFPS()), C_RED);
+#pragma endregion
+
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 
