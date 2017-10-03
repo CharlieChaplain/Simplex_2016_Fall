@@ -506,9 +506,9 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	// populates vPoints
 	for (int y = 0; y < a_nSubdivisions; y++) {
 		for (int x = 0; x < a_nSubdivisions; x++) {
-			lPoints[y].push_back(vector3(a_fRadius * sin(x * fHorzAngle) * cos((x * fVertAngle) - glm::half_pi<float>()),
-										 a_fRadius * cos(x * fHorzAngle) * cos((x * fVertAngle) - glm::half_pi<float>()),
-										 a_fRadius * sin((x * fVertAngle) - glm::half_pi<float>())));
+			lPoints[y].push_back(vector3(a_fRadius * sin(x * fHorzAngle) * (cos((y * fVertAngle) - glm::half_pi<float>())),
+										 a_fRadius * (sin((y * fVertAngle) - glm::half_pi<float>())),
+										 a_fRadius * cos(x * fHorzAngle) * (cos((y * fVertAngle) - glm::half_pi<float>()))));
 		}
 	}
 
@@ -518,12 +518,10 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		if (i == a_nSubdivisions - 1) {
 			AddTri(lPoints[0][0], lPoints[0][i], vTopPoint);										// makes top tri
 			AddTri(lPoints[a_nSubdivisions - 1][i], lPoints[a_nSubdivisions - 1][0], vBotPoint);	// makes bottom tri
-			//AddQuad(bottomPoints[0], bottomPoints[i], topPoints[0], topPoints[i]);					// makes length face
 		}
 		else {
 			AddTri(lPoints[0][i + 1], lPoints[0][i], vTopPoint);		// makes top tri
 			AddTri(lPoints[a_nSubdivisions - 1][i], lPoints[a_nSubdivisions - 1][i + 1], vBotPoint);
-			//AddQuad(bottomPoints[i + 1], bottomPoints[i], topPoints[i + 1], topPoints[i]);	// makes length face
 		}
 	}
 
