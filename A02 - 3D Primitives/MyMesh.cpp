@@ -478,7 +478,7 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		GenerateCube(a_fRadius * 2.0f, a_v3Color);
 		return;
 	}
-	if (a_nSubdivisions > 6)
+	if (a_nSubdivisions < 6)
 		a_nSubdivisions = 6;
 
 	Release();
@@ -486,7 +486,7 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 
 	/*
 		x = r sin(u) cos(v)
-		y = r cos(u) sin(v)
+		y = r cos(u) cos(v)
 		z = r sin(v)
 
 		probably have to swap y and z
@@ -494,7 +494,38 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		u ranges over full circle, v ranges -pi/2 to pi/2
 	*/
 
-	
+	float fHorzAngle = (float)(glm::pi<float>() * 2.0f / a_nSubdivisions);
+	float fVertAngle = (float)(glm::pi<float>() / a_nSubdivisions);
+
+	// vPoints holds all sphere points aside from the very top and bottom.
+	std::vector<std::vector<vector3>> lPoints(a_nSubdivisions);
+	// these two are the top and bottom points of the sphere
+	vector3 vTopPoint(0.0f, a_fRadius, 0.0f);
+	vector3 vBotPoint(0.0f, -a_fRadius, 0.0f);
+
+	// populates vPoints
+	for (int y = 0; y < a_nSubdivisions; y++) {
+		for (int x = 0; x < a_nSubdivisions; x++) {
+			lPoints[y].push_back(vector3(a_fRadius * sin(x * fHorzAngle) * cos((x * fVertAngle) - glm::half_pi<float>()),
+										 a_fRadius * cos(x * fHorzAngle) * cos((x * fVertAngle) - glm::half_pi<float>()),
+										 a_fRadius * sin((x * fVertAngle) - glm::half_pi<float>())));
+		}
+	}
+
+	//makes all faces
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		// if index is at the end
+		if (i == a_nSubdivisions - 1) {
+			AddTri(lPoints[0][0], lPoints[0][i], vTopPoint);										// makes top tri
+			AddTri(lPoints[a_nSubdivisions - 1][i], lPoints[a_nSubdivisions - 1][0], vBotPoint);	// makes bottom tri
+			//AddQuad(bottomPoints[0], bottomPoints[i], topPoints[0], topPoints[i]);					// makes length face
+		}
+		else {
+			AddTri(lPoints[0][i + 1], lPoints[0][i], vTopPoint);		// makes top tri
+			AddTri(lPoints[a_nSubdivisions - 1][i], lPoints[a_nSubdivisions - 1][i + 1], vBotPoint);
+			//AddQuad(bottomPoints[i + 1], bottomPoints[i], topPoints[i + 1], topPoints[i]);	// makes length face
+		}
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
