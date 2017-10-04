@@ -459,9 +459,57 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	float fTubeRadius = a_fOuterRadius - a_fInnerRadius;
+	float fAngleA = 2 * glm::pi<float>() / a_nSubdivisionsA;
+	float fAngleB = 2 * glm::pi<float>() / a_nSubdivisionsB;
+
+	/*
+		
+		x = (c + a cos(v)) cos(u)
+		z = a sin(v)
+		z = (c + a cos(v)) sin(u)
+
+		c = inner radius =	a_fInnerRadius
+		a = tube radius =	fTubeRadius
+		u, v = 0 to 2pi =	fAngleA, fAngleB respectively
+
+	*/
+
+	// vPoints holds all sphere points aside from the very top and bottom.
+	std::vector<std::vector<vector3>> lPoints(a_nSubdivisionsA);
+
+	// populates vPoints
+	for (int y = 0; y < a_nSubdivisionsB; y++) {
+		for (int x = 0; x < a_nSubdivisionsA; x++) {
+			lPoints[a_nSubdivisionsB - 1 - y].push_back(vector3((a_fInnerRadius + (fTubeRadius * cos(y * fAngleB))) * cos(x * fAngleA),
+																fTubeRadius * sin(y * fAngleB),
+																(a_fInnerRadius + (fTubeRadius * cos(y * fAngleB))) * sin(x * fAngleA)));
+		}
+	}
+
+	for (int x = 0; x < a_nSubdivisionsA; x++) {
+		for (int y = 0; y < a_nSubdivisionsB; y++) {
+			// if x is at the end
+			if (x == a_nSubdivisionsA - 1) {
+				//if y is at the end
+				if (y == a_nSubdivisionsB - 1) {
+					AddQuad(lPoints[0][0], lPoints[0][x], lPoints[y][0], lPoints[y][x]);
+				}
+				else {
+					AddQuad(lPoints[y + 1][0], lPoints[y + 1][x], lPoints[y][0], lPoints[y][x]);
+				}
+			}
+			else {
+				//if y is at the end
+				if (y == a_nSubdivisionsB - 1) {
+					AddQuad(lPoints[0][x + 1], lPoints[0][x], lPoints[y][x + 1], lPoints[y][x]);
+				}
+				else {
+					AddQuad(lPoints[y + 1][x + 1], lPoints[y + 1][x], lPoints[y][x + 1], lPoints[y][x]);
+				}
+			}
+		}
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -483,16 +531,6 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 
 	Release();
 	Init();
-
-	/*
-		x = r sin(u) cos(v)
-		y = r cos(u) cos(v)
-		z = r sin(v)
-
-		probably have to swap y and z
-
-		u ranges over full circle, v ranges -pi/2 to pi/2
-	*/
 
 	float fHorzAngle = (float)(glm::pi<float>() * 2.0f / a_nSubdivisions);
 	float fVertAngle = (float)(glm::pi<float>() / a_nSubdivisions);
