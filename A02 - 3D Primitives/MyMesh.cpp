@@ -473,13 +473,13 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		a_fRadius = 0.01f;
 
 	//Sets minimum and maximum of subdivisions
-	if (a_nSubdivisions < 1)
+	if (a_nSubdivisions < 3)
 	{
 		GenerateCube(a_fRadius * 2.0f, a_v3Color);
 		return;
 	}
-	if (a_nSubdivisions < 6)
-		a_nSubdivisions = 6;
+	if (a_nSubdivisions > 12)
+		a_nSubdivisions = 12;
 
 	Release();
 	Init();
@@ -500,13 +500,13 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	// vPoints holds all sphere points aside from the very top and bottom.
 	std::vector<std::vector<vector3>> lPoints(a_nSubdivisions);
 	// these two are the top and bottom points of the sphere
-	vector3 vTopPoint(0.0f, a_fRadius, 0.0f);
-	vector3 vBotPoint(0.0f, -a_fRadius, 0.0f);
+	vector3 v3TopPoint(0.0f, a_fRadius, 0.0f);
+	vector3 v3BotPoint(0.0f, -a_fRadius, 0.0f);
 
 	// populates vPoints
 	for (int y = 0; y < a_nSubdivisions; y++) {
 		for (int x = 0; x < a_nSubdivisions; x++) {
-			lPoints[y].push_back(vector3(a_fRadius * sin(x * fHorzAngle) * (cos((y * fVertAngle) - glm::half_pi<float>())),
+			lPoints[a_nSubdivisions - 1 - y].push_back(vector3(a_fRadius * sin(x * fHorzAngle) * (cos((y * fVertAngle) - glm::half_pi<float>())),
 										 a_fRadius * (sin((y * fVertAngle) - glm::half_pi<float>())),
 										 a_fRadius * cos(x * fHorzAngle) * (cos((y * fVertAngle) - glm::half_pi<float>()))));
 		}
@@ -516,12 +516,25 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	for (int i = 0; i < a_nSubdivisions; i++) {
 		// if index is at the end
 		if (i == a_nSubdivisions - 1) {
-			AddTri(lPoints[0][0], lPoints[0][i], vTopPoint);										// makes top tri
-			AddTri(lPoints[a_nSubdivisions - 1][i], lPoints[a_nSubdivisions - 1][0], vBotPoint);	// makes bottom tri
+			AddTri(lPoints[0][i], lPoints[0][0], v3TopPoint);										// makes top tri
+			AddTri(lPoints[a_nSubdivisions - 1][0], lPoints[a_nSubdivisions - 1][i], v3BotPoint);	// makes bottom tri
 		}
 		else {
-			AddTri(lPoints[0][i + 1], lPoints[0][i], vTopPoint);		// makes top tri
-			AddTri(lPoints[a_nSubdivisions - 1][i], lPoints[a_nSubdivisions - 1][i + 1], vBotPoint);
+			AddTri(lPoints[0][i], lPoints[0][i + 1], v3TopPoint);										// makes top tri
+			AddTri(lPoints[a_nSubdivisions - 1][i + 1], lPoints[a_nSubdivisions - 1][i], v3BotPoint);	// makes bottom tri
+		}
+
+		//this for loop will loop through all vertical slices.
+		//It stops before the last ring because all points in that ring are basically equal to v3BotPoint
+		for (int j = 0; j < a_nSubdivisions - 1; j++) {
+			// if index is at the end
+			if (i == a_nSubdivisions - 1) {
+				AddQuad(lPoints[j + 1][i], lPoints[j + 1][0], lPoints[j][i], lPoints[j][0]);
+			}
+			else {
+				
+				AddQuad(lPoints[j + 1][i], lPoints[j + 1][i + 1], lPoints[j][i], lPoints[j][i + 1]);
+			}
 		}
 	}
 
