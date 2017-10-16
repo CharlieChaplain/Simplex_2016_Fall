@@ -39,12 +39,11 @@ void Application::InitVariables(void)
 	{
 		uint k = i - uSides; // counts from 0 to m_uOrbits
 		std::vector<vector3> ring;
-		float fAngle = 2 * glm::pi<float>() / uSides + k;
+		float fAngle = 2 * glm::pi<float>() / (uSides + k); // the internal angle of each n-gon ring
+
+		// this part populates stopsListList with stops for the spheres to visit as they LERP around
 		for (uint j = 0; j < uSides + k; j++) {
-			//ring.push_back(vector3((fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * cos(j * fAngleA),
-			//	(fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * sin(j * fAngleA),
-			//	0));
-			ring.push_back(vector3(fSize * cos(fAngle), fSize * sin(fAngle), 0.0f));
+			ring.push_back(vector3(fSize * cos(fAngle * j), fSize * sin(fAngle * j), 0.0f));
 		}
 		m_stopsListList.push_back(ring);
 
@@ -54,22 +53,7 @@ void Application::InitVariables(void)
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
 	}
-
-	//m_stopsListList.resize(m_uOrbits);
-
-	// this part populates stopsListList with stops for the spheres to visit as they LERP around
-	/* BAD CODE
-	for (uint i = 0; i < m_uOrbits; i++) {
-		std::vector<vector3> ring;
-		float fAngleA = 2 * glm::pi<float>() / uSides + i;
-		for (uint j = 0; j < uSides + i; j++) {
-			ring.push_back(vector3((fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * cos(j * fAngleA),		 
-									(fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * sin(j * fAngleA),
-									0));
-		}
-		m_stopsListList.push_back(ring);
-	}
-	*/
+	
 	for (uint i = 0; i < m_uOrbits; ++i) {
 		m_fPrevStopIndex.push_back(0);
 		m_fNextStopIndex.push_back(1);
@@ -97,48 +81,48 @@ void Application::Display(void)
 	/*
 		The following offset will orient the orbits as in the demo, start without it to make your life easier.
 	*/
-	//m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
+	m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
 
 	//Get a timer
 	static float fTimer = 0;	//store the new timer
 	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
 	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
 
-	
-	
-
-	// draw a shapes
+	// draw shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
-		std::vector<vector3> tempList = m_stopsListList[i];
-		//calculate the current position
+
+		// gets the necessary positions to LERP from via the list of stops. first number is which ring, second number is which stop of which ring
 		vector3 v3PrevStop = m_stopsListList[i][m_fPrevStopIndex[i]];
 		vector3 v3NextStop = m_stopsListList[i][m_fNextStopIndex[i]];
 
-		float fAnimationLasts = 2.0f;
+		float fAnimationLasts = 0.5f;
 		float fPercent = MapValue(fTimer, 0.0f, fAnimationLasts, 0.0f, 1.0f);
-
+		
+		//calculate the current position
 		vector3 v3CurrentPos = glm::lerp(v3PrevStop, v3NextStop, fPercent);
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
 
-		// reassigns stop indices
+		// reassigns stop indices after they hit the next stop
 		if (fPercent > 1.0) {
-			if (m_fNextStopIndex[i] >= m_stopsListList[i].size() - 1)
-				m_fNextStopIndex[i] = 0;
-			else
-				m_fNextStopIndex[i]++;
-			if (m_fPrevStopIndex[i] >= m_stopsListList[i].size() - 1)
-				m_fPrevStopIndex[i] = 0;
-			else
-				m_fPrevStopIndex[i]++;
+			for (int j = 0; j < m_uOrbits; j++) {
+				if (m_fNextStopIndex[j] >= m_stopsListList[j].size() - 1)
+					m_fNextStopIndex[j] = 0;
+				else
+					m_fNextStopIndex[j]++;
+
+				if (m_fPrevStopIndex[j] >= m_stopsListList[j].size() - 1)
+					m_fPrevStopIndex[j] = 0;
+				else
+					m_fPrevStopIndex[j]++;
+			}
+			
 			fTimer = 0;
 		}
-
 		//draw spheres
 		m_pMeshMngr->AddSphereToRenderList(m4Model * glm::scale(vector3(0.1)), C_WHITE);
 	}
-
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
 
