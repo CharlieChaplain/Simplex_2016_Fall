@@ -2,7 +2,7 @@
 void Application::InitVariables(void)
 {
 	////Change this to your name and email
-	//m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "Stephen Callen - src3363@rit.edu";
 
 	////Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
@@ -37,10 +37,42 @@ void Application::InitVariables(void)
 	uint uSides = 3; //start with the minimal 3 sides
 	for (uint i = uSides; i < m_uOrbits + uSides; i++)
 	{
+		uint k = i - uSides; // counts from 0 to m_uOrbits
+		std::vector<vector3> ring;
+		float fAngle = 2 * glm::pi<float>() / uSides + k;
+		for (uint j = 0; j < uSides + k; j++) {
+			//ring.push_back(vector3((fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * cos(j * fAngleA),
+			//	(fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * sin(j * fAngleA),
+			//	0));
+			ring.push_back(vector3(fSize * cos(fAngle), fSize * sin(fAngle), 0.0f));
+		}
+		m_stopsListList.push_back(ring);
+
+
 		vector3 v3Color = WaveLengthToRGB(uColor); //calculate color based on wavelength
 		m_shapeList.push_back(m_pMeshMngr->GenerateTorus(fSize, fSize - 0.1f, 3, i, v3Color)); //generate a custom torus and add it to the meshmanager
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
+	}
+
+	//m_stopsListList.resize(m_uOrbits);
+
+	// this part populates stopsListList with stops for the spheres to visit as they LERP around
+	/* BAD CODE
+	for (uint i = 0; i < m_uOrbits; i++) {
+		std::vector<vector3> ring;
+		float fAngleA = 2 * glm::pi<float>() / uSides + i;
+		for (uint j = 0; j < uSides + i; j++) {
+			ring.push_back(vector3((fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * cos(j * fAngleA),		 
+									(fSize - 0.1f + (fTubeRadius * cos(glm::half_pi<float>()))) * sin(j * fAngleA),
+									0));
+		}
+		m_stopsListList.push_back(ring);
+	}
+	*/
+	for (uint i = 0; i < m_uOrbits; ++i) {
+		m_fPrevStopIndex.push_back(0);
+		m_fNextStopIndex.push_back(1);
 	}
 }
 void Application::Update(void)
@@ -67,14 +99,41 @@ void Application::Display(void)
 	*/
 	//m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
 
+	//Get a timer
+	static float fTimer = 0;	//store the new timer
+	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
+	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
+
+	
+	
+
 	// draw a shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
-
+		std::vector<vector3> tempList = m_stopsListList[i];
 		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
+		vector3 v3PrevStop = m_stopsListList[i][m_fPrevStopIndex[i]];
+		vector3 v3NextStop = m_stopsListList[i][m_fNextStopIndex[i]];
+
+		float fAnimationLasts = 2.0f;
+		float fPercent = MapValue(fTimer, 0.0f, fAnimationLasts, 0.0f, 1.0f);
+
+		vector3 v3CurrentPos = glm::lerp(v3PrevStop, v3NextStop, fPercent);
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
+
+		// reassigns stop indices
+		if (fPercent > 1.0) {
+			if (m_fNextStopIndex[i] >= m_stopsListList[i].size() - 1)
+				m_fNextStopIndex[i] = 0;
+			else
+				m_fNextStopIndex[i]++;
+			if (m_fPrevStopIndex[i] >= m_stopsListList[i].size() - 1)
+				m_fPrevStopIndex[i] = 0;
+			else
+				m_fPrevStopIndex[i]++;
+			fTimer = 0;
+		}
 
 		//draw spheres
 		m_pMeshMngr->AddSphereToRenderList(m4Model * glm::scale(vector3(0.1)), C_WHITE);

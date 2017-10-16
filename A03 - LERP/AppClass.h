@@ -45,6 +45,12 @@ private:
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application
 
+	std::vector<std::vector<vector3>> m_stopsListList; // list of all rings of stops
+	std::vector<uint> m_fPrevStopIndex;
+	std::vector<uint> m_fNextStopIndex;
+
+	
+
 public:
 #pragma region Constructor / Run / Destructor
 	/*
