@@ -33,16 +33,10 @@ void Application::Display(void)
 
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
-	
-	quaternion qRotX = glm::angleAxis(m_v3Rotation.x, AXIS_X);
-	quaternion qRotY = glm::angleAxis(m_v3Rotation.y, AXIS_Y);
-	quaternion qRotZ = glm::angleAxis(m_v3Rotation.z, AXIS_Z);
 
-	matrix4 m4RotX = glm::toMat4(qRotX);
-	matrix4 m4RotY = glm::toMat4(qRotY);
-	matrix4 m4RotZ = glm::toMat4(qRotZ);
-	
-	matrix4 m4Model = m4RotZ * m4RotY * m4RotX;
+	matrix4 m4Rot = glm::toMat4(m_qRotation);
+
+	matrix4 m4Model = m4Rot;
 	/*
 	static float fValue = 0.0f;
 	quaternion q1 = glm::angleAxis(fValue, AXIS_Z);
