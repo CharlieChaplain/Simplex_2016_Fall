@@ -385,6 +385,39 @@ void Application::ProcessKeyboard(void)
 
 	if (fMultiplier)
 		fSpeed *= 5.0f;
+	/*
+	This handles WASD and QE movement of the camera
+	*/
+	// W moves forward on the z axis
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(0.0f, 0.0f, -fSpeed));
+		m_pCamera->SetTarget(m_pCamera->GetTarget()+ vector3(0.0f, 0.0f, -fSpeed));
+	}	// S moves backwards on the z axis
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(0.0f, 0.0f, fSpeed));
+		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(0.0f, 0.0f, fSpeed));
+	}
+	// A strafes left
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(-fSpeed, 0.0f, 0.0f));
+		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(-fSpeed, 0.0f, 0.0f));
+	}
+	// D strafes right
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(fSpeed, 0.0f, 0.0f));
+		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(fSpeed, 0.0f, 0.0f));
+	}
+	// Q moves down on the y axis
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(0.0f, -fSpeed, 0.0f));
+		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(0.0f, -fSpeed, 0.0f));
+	}
+	// E moves up on the y axis
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
+		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(0.0f, fSpeed, 0.0f));
+		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(0.0f, fSpeed, 0.0f));
+	}
+	
 #pragma endregion
 }
 //Joystick
