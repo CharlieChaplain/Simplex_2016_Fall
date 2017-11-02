@@ -18,6 +18,7 @@ class MyCamera
 	vector3 m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What is up		Not much dog, what's up with you?
 	vector3 m_v3Forward = vector3(0.0f, 0.0f, 1.0f); //What direction is forward of the camera
 	vector3 m_v3Right = vector3(1.0f, 0.0f, 0.0f); //What direction is right of the camera
+	quaternion m_qOrientation = quaternion();
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
@@ -132,6 +133,33 @@ public:
 	OUTPUT: position of the camera
 	*/
 	vector3 GetUp(void);
+
+	/*
+	USAGE: Sets the position of the camera
+	ARGUMENTS: vector3 a_v3Forward -> What forward means in the world
+	OUTPUT: ---
+	*/
+	void SetForward(vector3 a_v3Forward);
+
+	/*
+	USAGE: Gets the position of the camera
+	ARGUMENTS: vector3 a_v3Forward -> What forward means in the world
+	OUTPUT: ---
+	*/
+	vector3 GetForward(void);
+	/*
+	USAGE: Sets the position of the camera
+	ARGUMENTS: vector3 a_v3Forward -> What forward means in the world
+	OUTPUT: ---
+	*/
+	void SetRight(vector3 a_v3Right);
+
+	/*
+	USAGE: Gets the position of the camera
+	ARGUMENTS: vector3 a_v3Right -> What right means in the world
+	OUTPUT: ---
+	*/
+	vector3 GetRight(void);
 
 	/*
 	USAGE: Sets Perspective Camera

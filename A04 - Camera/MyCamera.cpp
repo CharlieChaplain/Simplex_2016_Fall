@@ -8,6 +8,10 @@ void Simplex::MyCamera::SetTarget(vector3 a_v3Target) { m_v3Target = a_v3Target;
 
 void Simplex::MyCamera::SetUp(vector3 a_v3Up) { m_v3Up = a_v3Up; }
 
+void Simplex::MyCamera::SetForward(vector3 a_v3Forward) { m_v3Forward = a_v3Forward; }
+
+void Simplex::MyCamera::SetRight(vector3 a_v3Right) { m_v3Right = a_v3Right; }
+
 void Simplex::MyCamera::SetPerspective(bool a_bPerspective) { m_bPerspective = a_bPerspective; }
 
 void Simplex::MyCamera::SetFOV(float a_fFOV) { m_fFOV = a_fFOV; }
@@ -27,6 +31,10 @@ matrix4 Simplex::MyCamera::GetViewMatrix(void) { CalculateViewMatrix(); return m
 vector3 Simplex::MyCamera::GetPosition(void) { return m_v3Position; }
 
 vector3 Simplex::MyCamera::GetUp(void) { return m_v3Up; }
+
+vector3 Simplex::MyCamera::GetForward(void) { return m_v3Forward; }
+
+vector3 Simplex::MyCamera::GetRight(void) { return m_v3Right; }
 
 vector3 Simplex::MyCamera::GetTarget(void) { return m_v3Target; }
 

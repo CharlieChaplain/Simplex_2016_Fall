@@ -371,22 +371,39 @@ void Application::CameraRotation(float a_fSpeed)
 	//Change the Yaw and the Pitch of the camera
 	//DO YOUR WORK HERE
 	//m_qOrientation = quaternion();
-	m_qOrientation = m_qOrientation * glm::angleAxis(fAngleX, AXIS_X) * glm::angleAxis(-fAngleY, AXIS_Y);
+	m_qOrientation = m_qOrientation * glm::angleAxis(fAngleX, AXIS_X) * glm::angleAxis(fAngleY, AXIS_Y);
+	m_qOrientation = glm::normalize(m_qOrientation);
 
 	//how to orient a vector using a quaternion (glm)
-	//v' = q * v * q^-1
-	//v = vector, v' = rotated vector, q = quaternion, q^-1 = inverse of quaternion
-	//find a way to inverse the quaternion...?
 
-	glm::inverse(m_qOrientation);
-
+	matrix4 m4CamRot = ToMatrix4(m_qOrientation);
 	
 	//I'm trying something here
+	/*
+	vector4 v4Forward = vector4(m_pCamera->GetForward(), 1.0f);
+	v4Forward = m4CamRot * v4Forward;
+
+	vector4 v4Right = vector4(m_pCamera->GetRight(), 1.0f);
+	v4Right = m4CamRot * v4Right;
+	*/
+
+	vector3 v3Forward = glm::normalize(m_pCamera->GetTarget() - m_pCamera->GetPosition());
+	v3Forward = m_qOrientation * v3Forward;
+
+	vector3 v3Right = m_pCamera->GetRight();
+	v3Right = m_qOrientation * v3Right;
+
+	vector3 v3Up = glm::cross(v3Forward, v3Right);
+
+	/*
 	vector3 v3TargetSpace = m_pCamera->GetTarget() - m_pCamera->GetPosition();
 	vector3 v3NewTargetSpace = m_qOrientation * v3TargetSpace;
 	vector3 v3NewTarget = v3NewTargetSpace + m_pCamera->GetPosition();
-	m_pCamera->SetTarget(v3NewTarget);
-	m_pCamera->SetUp(m_qOrientation * m_pCamera->GetUp());
+	*/
+	m_pCamera->SetTarget(m_pCamera->GetPosition() + (v3Forward * 10.0f));
+	m_pCamera->SetForward(v3Forward);
+	m_pCamera->SetRight(v3Right);
+	m_pCamera->SetUp(v3Up);
 	
 	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
 }
