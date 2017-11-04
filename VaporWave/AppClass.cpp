@@ -35,7 +35,7 @@ void Application::Update(void)
 	CameraRotation(0.05f);
 
 	//Add objects to the Manager
-	for (int j = -50; j < 50; j += 2)
+	for (int j = -130; j < 10; j += 2)
 	{
 		for (int i = -50; i < 50; i += 2)
 		{

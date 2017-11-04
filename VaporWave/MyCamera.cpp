@@ -121,8 +121,8 @@ Simplex::MyCamera::~MyCamera(void)
 
 void Simplex::MyCamera::ResetCamera(void)
 {
-	m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
-	m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
+	m_v3Position = vector3(0.0f, 3.0f, 10.0f); //Where my camera is located
+	m_v3Target = vector3(0.0f, 3.0f, 0.0f); //What I'm looking at
 	m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What is up
 	m_v3Forward = vector3(0.0f, 0.0f, -1.0f); //What is forward
 	m_v3Right = vector3(1.0f, 0.0f, 0.0f); //What is right
@@ -132,7 +132,7 @@ void Simplex::MyCamera::ResetCamera(void)
 	m_fFOV = 45.0f; //Field of View
 
 	m_v2Resolution = vector2(1280.0f, 720.0f); //Resolution of the window
-	m_v2NearFar = vector2(0.001f, 1000.0f); //Near and Far planes
+	m_v2NearFar = vector2(0.001f, 100.0f); //Near and Far planes
 
 	m_v2Horizontal = vector2(-5.0f, 5.0f); //Ortographic horizontal projection
 	m_v2Vertical = vector2(-5.0f, 5.0f); //Ortographic vertical projection

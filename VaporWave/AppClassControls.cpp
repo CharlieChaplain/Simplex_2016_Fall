@@ -371,35 +371,7 @@ void Application::CameraRotation(float a_fSpeed)
 	//Change the Yaw and the Pitch of the camera
 	//DO YOUR WORK HERE
 	//m_qOrientation = quaternion();
-	m_qOrientation = m_qOrientation * glm::angleAxis(-fAngleX, AXIS_X) * glm::angleAxis(fAngleY, AXIS_Y);
-
-	//I'm trying something here
-	/*
-	matrix4 m4CamRot = ToMatrix4(m_qOrientation);
-
-	vector4 v4Forward = m4CamRot * vector4(0.0f, 0.0f, -1.0f, 0.0f);
-	vector4 v4Right = m4CamRotY * vector4(1.0f, 0.0f, 0.0f, 0.0f);
-
-	vector3 v3Forward = vector3(v4Forward);
-	vector3 v3Right = vector3(v4Right);
-	vector3 v3Up = glm::cross(v3Right, v3Forward);
-	*/
-
-	//rotating forward and right vectors
-	vector3 v3Forward = m_qOrientation * vector3(0.0f, 0.0f, -1.0f);
-	vector3 v3Right = m_qOrientation * vector3(1.0f, 0.0f, 0.0f);
-	vector3 v3Up = glm::cross(v3Right, v3Forward);
-
-	/* Attempting to determine target by finding vector between camera pos and target
-	vector3 v3TargetSpace = m_pCamera->GetTarget() - m_pCamera->GetPosition();
-	vector3 v3NewTargetSpace = m_qOrientation * v3TargetSpace;
-	vector3 v3NewTarget = v3NewTargetSpace + m_pCamera->GetPosition();
-	*/
-
-	m_pCamera->SetTarget(m_pCamera->GetPosition() + (v3Forward * 10.0f));
-	m_pCamera->SetForward(v3Forward);
-	m_pCamera->SetRight(v3Right);
-	m_pCamera->SetUp(v3Up);
+	
 	
 	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
 }
@@ -417,37 +389,26 @@ void Application::ProcessKeyboard(void)
 
 	if (fMultiplier)
 		fSpeed *= 5.0f;
-	/*
-	This handles WASD and QE movement of the camera
-	*/
-	// W moves forward on the z axis
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-		m_pCamera->SetPosition(m_pCamera->GetPosition() + (fSpeed * m_pCamera->GetForward()));
-		m_pCamera->SetTarget(m_pCamera->GetTarget()+ (fSpeed * m_pCamera->GetForward()));
-	}	// S moves backwards on the z axis
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-		m_pCamera->SetPosition(m_pCamera->GetPosition() + (-fSpeed * m_pCamera->GetForward()));
-		m_pCamera->SetTarget(m_pCamera->GetTarget() + (-fSpeed * m_pCamera->GetForward()));
+
+	float fSpeed2 = 0.3f;
+	m_pCamera->SetPosition(m_pCamera->GetPosition() + (fSpeed * vector3(0.0f, 0.0f, -1.0f)));
+	m_pCamera->SetTarget(m_pCamera->GetTarget() + (fSpeed * vector3(0.0f, 0.0f, -1.0f)));
+
+	if (m_pCamera->GetPosition().z < -30) {
+		m_pCamera->ResetCamera();
 	}
-	// A strafes left
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-		m_pCamera->SetPosition(m_pCamera->GetPosition() + (-fSpeed * m_pCamera->GetRight()));
-		m_pCamera->SetTarget(m_pCamera->GetTarget() + (-fSpeed * m_pCamera->GetRight()));
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::F5)) {
+		m_pCamera->SetUp(vector3(0.0f, 1.0f, 0.0f));
 	}
-	// D strafes right
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-		m_pCamera->SetPosition(m_pCamera->GetPosition() + (fSpeed * m_pCamera->GetRight()));
-		m_pCamera->SetTarget(m_pCamera->GetTarget() + (fSpeed * m_pCamera->GetRight()));
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::F6)) {
+		m_pCamera->SetUp(vector3(1.0f, 0.0f, 0.0f));
 	}
-	// Q moves down on the y axis
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
-		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(0.0f, -fSpeed, 0.0f));
-		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(0.0f, -fSpeed, 0.0f));
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::F7)) {
+		m_pCamera->SetUp(vector3(0.0f, -1.0f, 0.0f));
 	}
-	// E moves up on the y axis
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
-		m_pCamera->SetPosition(m_pCamera->GetPosition() + vector3(0.0f, fSpeed, 0.0f));
-		m_pCamera->SetTarget(m_pCamera->GetTarget() + vector3(0.0f, fSpeed, 0.0f));
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::F8)) {
+		m_pCamera->SetUp(vector3(-1.0f, 0.0f, 0.0f));
 	}
 	
 #pragma endregion
