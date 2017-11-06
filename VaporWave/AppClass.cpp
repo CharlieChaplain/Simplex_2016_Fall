@@ -61,7 +61,7 @@ void Application::Display(void)
 	m_pMyMeshMngr->ClearRenderList();
 	
 	//draw gui
-	DrawGUI();
+	//DrawGUI();
 	
 	//end the current frame (internally swaps the front and back buffers)
 	m_pWindow->display();

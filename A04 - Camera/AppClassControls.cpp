@@ -369,33 +369,14 @@ void Application::CameraRotation(float a_fSpeed)
 		fAngleX += fDeltaMouse * a_fSpeed;
 	}
 	//Change the Yaw and the Pitch of the camera
-	//DO YOUR WORK HERE
-	//m_qOrientation = quaternion();
 	m_qOrientation = m_qOrientation * glm::angleAxis(-fAngleX, AXIS_X) * glm::angleAxis(fAngleY, AXIS_Y);
 
-	//I'm trying something here
-	/*
-	matrix4 m4CamRot = ToMatrix4(m_qOrientation);
-
-	vector4 v4Forward = m4CamRot * vector4(0.0f, 0.0f, -1.0f, 0.0f);
-	vector4 v4Right = m4CamRotY * vector4(1.0f, 0.0f, 0.0f, 0.0f);
-
-	vector3 v3Forward = vector3(v4Forward);
-	vector3 v3Right = vector3(v4Right);
-	vector3 v3Up = glm::cross(v3Right, v3Forward);
-	*/
-
-	//rotating forward and right vectors
+	//rotating forward vector and finding up and right
 	vector3 v3Forward = m_qOrientation * vector3(0.0f, 0.0f, -1.0f);
-	vector3 v3Right = m_qOrientation * vector3(1.0f, 0.0f, 0.0f);
-	vector3 v3Up = glm::cross(v3Right, v3Forward);
+	vector3 v3Up = vector3(0.0f, 1.0f, 0.0f);
+	vector3 v3Right = glm::cross(v3Forward, v3Up);
 
-	/* Attempting to determine target by finding vector between camera pos and target
-	vector3 v3TargetSpace = m_pCamera->GetTarget() - m_pCamera->GetPosition();
-	vector3 v3NewTargetSpace = m_qOrientation * v3TargetSpace;
-	vector3 v3NewTarget = v3NewTargetSpace + m_pCamera->GetPosition();
-	*/
-
+	//giving all values to the m_pCamera
 	m_pCamera->SetTarget(m_pCamera->GetPosition() + (v3Forward * 10.0f));
 	m_pCamera->SetForward(v3Forward);
 	m_pCamera->SetRight(v3Right);
