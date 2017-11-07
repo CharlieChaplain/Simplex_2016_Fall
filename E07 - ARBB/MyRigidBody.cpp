@@ -85,8 +85,38 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 	
 	//your code goes here---------------------
-	m_v3MinG = m_v3MinL;
-	m_v3MaxG = m_v3MaxL;
+	vector3 v3ARBB[8];
+
+	//front square
+	v3ARBB[0] = m_v3MinL;
+	v3ARBB[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
+	v3ARBB[2] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MinL.z);
+	v3ARBB[3] = vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z);
+	//back square
+	v3ARBB[4] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3ARBB[5] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3ARBB[6] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
+	v3ARBB[7] = m_v3MaxL;
+
+	//converts to world space
+	for (uint i = 0; i < v3ARBB->length(); i++) {
+		v3ARBB[i] = vector3(m_m4ToWorld * vector4(v3ARBB[i], 1.0f));
+	}
+
+	m_v3MaxG = m_v3MinG = v3ARBB[0];
+
+	//Get the max and min out of the list
+	for (uint i = 1; i < 8; ++i)
+	{
+		if (m_v3MaxG.x < v3ARBB[i].x) m_v3MaxG.x = v3ARBB[i].x;
+		else if (m_v3MinG.x > v3ARBB[i].x) m_v3MinG.x = v3ARBB[i].x;
+
+		if (m_v3MaxG.y < v3ARBB[i].y) m_v3MaxG.y = v3ARBB[i].y;
+		else if (m_v3MinG.y > v3ARBB[i].y) m_v3MinG.y = v3ARBB[i].y;
+
+		if (m_v3MaxG.z < v3ARBB[i].z) m_v3MaxG.z = v3ARBB[i].z;
+		else if (m_v3MinG.z > v3ARBB[i].z) m_v3MinG.z = v3ARBB[i].z;
+	}
 	//----------------------------------------
 
 	//we calculate the distance between min and max vectors
