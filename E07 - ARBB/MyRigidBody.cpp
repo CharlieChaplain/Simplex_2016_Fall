@@ -94,15 +94,16 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	v3ARBB[3] = vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z);
 	//back square
 	v3ARBB[4] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
-	v3ARBB[5] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3ARBB[5] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z);
 	v3ARBB[6] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
 	v3ARBB[7] = m_v3MaxL;
 
 	//converts to world space
-	for (uint i = 0; i < v3ARBB->length(); i++) {
-		v3ARBB[i] = vector3(m_m4ToWorld * vector4(v3ARBB[i], 1.0f));
+	for (uint index = 0; index < 8; index++) {
+		v3ARBB[index] = vector3(m_m4ToWorld * vector4(v3ARBB[index], 1.0f));
 	}
 
+	//defaults global max and min to first corner of arbb
 	m_v3MaxG = m_v3MinG = v3ARBB[0];
 
 	//Get the max and min out of the list
