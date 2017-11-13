@@ -31,6 +31,8 @@ class MyRigidBody
 	vector3 m_v3MinG = ZERO_V3; //minimum coordinate in global space (for ARBB)
 	vector3 m_v3MaxG = ZERO_V3; //maximum coordinate in global space (for ARBB)
 
+	vector3 m_v3Corner[8]; //array of vector3s storing all 8 corners of the OBB
+
 	vector3 m_v3HalfWidth = ZERO_V3; //half the size of the Oriented Bounding Box
 	vector3 m_v3ARBBSize = ZERO_V3;// size of the Axis (Re)Alligned Bounding Box
 
