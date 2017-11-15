@@ -278,37 +278,118 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
-	/*
-	Your code goes here instead of this comment;
+	vector3 v3DisBetween = a_pOther->GetCenterGlobal() - this->GetCenterGlobal();
 
-	For this method, if there is an axis that separates the two objects
-	then the return will be different than 0; 1 for any separating axis
-	is ok if you are not going for the extra credit, if you could not
-	find a separating axis you need to return 0, there is an enum in
-	Simplex that might help you [eSATResults] feel free to use it.
-	(eSATResults::SAT_NONE has a value of 0)
-	*/
+	vector3 AX = this->m_v3Corner[1] - this->m_v3Corner[0];
+	vector3 AY = this->m_v3Corner[2] - this->m_v3Corner[0];
+	vector3 AZ = this->m_v3Corner[4] - this->m_v3Corner[0];
+	vector3 BX = a_pOther->m_v3Corner[1] - a_pOther->m_v3Corner[0];
+	vector3 BY = a_pOther->m_v3Corner[2] - a_pOther->m_v3Corner[0];
+	vector3 BZ = a_pOther->m_v3Corner[4] - a_pOther->m_v3Corner[0];
 
-	float fRA;
-	float fRB;
-	matrix4 m4RotAtoB, m4AbsRotAtoB;
-	vector3 v3DirBetween = a_pOther->GetCenterGlobal() - this->GetCenterGlobal();
-
-	vector3 v3CurrentAxis = glm::normalize(this->m_v3Corner[1] - this->m_v3Corner[0]);
-	vector3 v3AonL = 
-
-
-
-
-
+	vector3 v3CurrentAxis;
 
 	/*
-	for (uint i = 0; i < 4; i++) {
-		for (uint j = 0; j < 4; j++) {
-			m4RotAtoB[i][j] = Dot(this->)
-		}
-	}
+	THIS CODE LEFT IN INTENTIONALLY DUE TO RUN TIME ANOMALY THAT I WOULD LIKE TO DISCUSS
+	v3CurrentAxis = AX;
+	if (SATTest(a_pOther, v3CurrentAxis, v3DisBetween, 1))
+		return eSATResults::SAT_AX;
 	*/
+
+	//AX
+	v3CurrentAxis = AX;
+	if(SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AX;
+	//AY
+	v3CurrentAxis = AY;
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AY;
+	//AZ
+	v3CurrentAxis = AZ;
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AZ;
+	//BX
+	v3CurrentAxis = BX;
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_BX;
+	//BY
+	v3CurrentAxis = BY;
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_BY;
+	//BZ
+	v3CurrentAxis = BZ;
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_BZ;
+	//AXxBX
+	v3CurrentAxis = glm::cross(AX, BX);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AXxBY;
+	//AXxBY
+	v3CurrentAxis = glm::cross(AX, BY);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AXxBY;
+	//AXxBZ
+	v3CurrentAxis = glm::cross(AX, BZ);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AXxBZ;
+	//AYxBX
+	v3CurrentAxis = glm::cross(AY, BX);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AYxBY;
+	//AYxBY
+	v3CurrentAxis = glm::cross(AY, BY);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AYxBY;
+	//AYxBZ
+	v3CurrentAxis = glm::cross(AY, BZ);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AYxBZ;
+	//AZxBX
+	v3CurrentAxis = glm::cross(AZ, BX);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AZxBY;
+	//AZxBY
+	v3CurrentAxis = glm::cross(AZ, BY);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AZxBY;
+	//AZxBZ
+	v3CurrentAxis = glm::cross(AZ, BZ);
+	if (SATTest(a_pOther, v3CurrentAxis))
+		return eSATResults::SAT_AZxBZ;
+
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
+}
+
+//THIS METHOD CAUSES A RUN TIME ANOMALY AND I WOULD LIKE TO TALK ABOUT IT AT A LATER DATE
+bool MyRigidBody::SATTest(MyRigidBody* const a_pOther, vector3 a_v3CurrentAxis, vector3 a_v3DisBetween, uint a_uResultNumber)
+{
+	float fAonL = glm::dot(this->GetMaxGlobal(), a_v3CurrentAxis);
+	float fBonL = glm::dot(a_pOther->GetMaxGlobal(), a_v3CurrentAxis);
+	float fDisBetweenonL = glm::dot(a_v3DisBetween, a_v3CurrentAxis);
+
+	if (pow(fAonL, 2.0f) + pow(fBonL, 2.0f) > pow(fDisBetweenonL, 2.0f)) {
+		return true;
+	}
+	return false;
+}
+
+bool MyRigidBody::SATTest(MyRigidBody* const a_pOther, vector3 a_v3CurrentAxis) {
+	float fMinA, fMinB;
+	fMinA = fMinB = std::numeric_limits<float>::max();
+	float fMaxA, fMaxB;
+	fMaxA = fMaxB = std::numeric_limits<float>::min();
+	for (uint i = 0; i < 8; i++) {
+		float fACornerOnL = glm::dot(this->m_v3Corner[i], a_v3CurrentAxis);
+		if (fACornerOnL < fMinA) fMinA = fACornerOnL;
+		else if (fACornerOnL > fMaxA) fMaxA = fACornerOnL;
+
+		float fBCornerOnL = glm::dot(a_pOther->m_v3Corner[i], a_v3CurrentAxis);
+		if (fBCornerOnL < fMinB) fMinB = fBCornerOnL;
+		else if (fBCornerOnL > fMaxB) fMaxB = fBCornerOnL;
+	}
+
+	if (fMinA > fMaxB || fMaxA < fMinB)
+		return true;
+	return false;
 }

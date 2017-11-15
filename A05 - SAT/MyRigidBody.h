@@ -249,6 +249,19 @@ private:
 	OUTPUT: 0 for colliding, other = first axis that succeeds test
 	*/
 	uint SAT(MyRigidBody* const a_pOther);
+	/* !!THIS METHOD CAUSES A RUN TIME ANOMALY AND I WOULD LIKE TO TALK ABOUT IT AT A LATER DATE!!
+	USAGE: Used internally to determine SAT test
+	ARGUMENTS: other rigidbody, vector3 of current axis being tested,
+	vector3 of distance between the two rigid bodies, number of test being conducted
+	OUTPUT: true if test detects no collision
+	*/
+	bool SATTest(MyRigidBody* const a_pOther, vector3 a_v3CurrentAxis, vector3 a_v3DisBetween, uint a_uResultNumber);
+	/*
+	USAGE: Used internally to determine SAT test
+	ARGUMENTS : other rigidbody, vector3 of current axis being tested
+	OUTPUT : true if test detects no collision
+	*/
+	bool SATTest(MyRigidBody* const a_pOther, vector3 a_v3CurrentAxis);
 };//class
 
 } //namespace Simplex
