@@ -128,6 +128,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E04_Transformations", "E04_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VaporWave", "VaporWave\VaporWave.vcxproj", "{92855673-5D39-4B22-A8E8-EC0A9ED46788}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NodeRacerTestCam", "NodeRacerTestCam\NodeRacerTestCam.vcxproj", "{49E15833-812E-49CE-9D27-37D8BDA13C97}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -296,6 +298,10 @@ Global
 		{92855673-5D39-4B22-A8E8-EC0A9ED46788}.Debug|x86.Build.0 = Debug|Win32
 		{92855673-5D39-4B22-A8E8-EC0A9ED46788}.Release|x86.ActiveCfg = Release|Win32
 		{92855673-5D39-4B22-A8E8-EC0A9ED46788}.Release|x86.Build.0 = Release|Win32
+		{49E15833-812E-49CE-9D27-37D8BDA13C97}.Debug|x86.ActiveCfg = Debug|Win32
+		{49E15833-812E-49CE-9D27-37D8BDA13C97}.Debug|x86.Build.0 = Debug|Win32
+		{49E15833-812E-49CE-9D27-37D8BDA13C97}.Release|x86.ActiveCfg = Release|Win32
+		{49E15833-812E-49CE-9D27-37D8BDA13C97}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -345,6 +351,7 @@ Global
 		{39CE51E7-52CC-432D-BE05-FAB989792BCA} = {E0A09DA7-AF20-49C2-84DC-481ADDD01DCA}
 		{BAD309B8-DD1B-4872-9BDB-F6F28E4D6C9E} = {13CD5CAF-2378-4851-9BEB-DF01D5A85C42}
 		{92855673-5D39-4B22-A8E8-EC0A9ED46788} = {75A6D539-8458-45DF-BE47-1376FB54C16E}
+		{49E15833-812E-49CE-9D27-37D8BDA13C97} = {75A6D539-8458-45DF-BE47-1376FB54C16E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3DF1A8F-33B1-4E27-B850-2CE0D7E71119}
