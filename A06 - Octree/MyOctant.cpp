@@ -3,10 +3,42 @@ using namespace Simplex;
 
 Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 {
+	
+	m_uMaxLevel = a_nMaxLevel;
+	m_uIdealEntityCount = a_nIdealEntityCount;
+
+	m_uID = m_uMyOctantCount;
+	m_uMyOctantCount++;
+
+	m_v3Max = vector3(std::numeric_limits<float>::min());
+	m_v3Min = vector3(std::numeric_limits<float>::max());
+
+	//finds min and max points by looking at the farthest entities in the scene
+	for (int i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
+		if (m_pEntityMngr->GetEntity(i)->GetPosition().x > m_v3Max.x)
+			m_v3Max.x = m_pEntityMngr->GetEntity(i)->GetPosition().x;
+		else if (m_pEntityMngr->GetEntity(i)->GetPosition().x < m_v3Min.x)
+			m_v3Min.x = m_pEntityMngr->GetEntity(i)->GetPosition().x;
+
+		if (m_pEntityMngr->GetEntity(i)->GetPosition().y > m_v3Max.y)
+			m_v3Max.y = m_pEntityMngr->GetEntity(i)->GetPosition().y;
+		else if (m_pEntityMngr->GetEntity(i)->GetPosition().y < m_v3Min.y)
+			m_v3Min.y = m_pEntityMngr->GetEntity(i)->GetPosition().y;
+
+		if (m_pEntityMngr->GetEntity(i)->GetPosition().z > m_v3Max.z)
+			m_v3Max.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
+		else if (m_pEntityMngr->GetEntity(i)->GetPosition().z < m_v3Min.z)
+			m_v3Min.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
+	}
+
+	m_v3Center = m_v3Max - m_v3Min;
+
+	m_pRoot = this;
 }
 
 Simplex::MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 {
+	m_uMyOctantCount++;
 }
 
 Simplex::MyOctant::MyOctant(MyOctant const & other)
@@ -65,6 +97,7 @@ void Simplex::MyOctant::DisplayLeafs(vector3 a_v3Color)
 
 void Simplex::MyOctant::ClearEntityList(void)
 {
+	m_EntityList.clear();
 }
 
 void Simplex::MyOctant::Subdivide(void)
@@ -104,7 +137,6 @@ void Simplex::MyOctant::KillBranches(void)
 			SafeDelete(ToDie);
 		}
 	}
-	Safe
 }
 
 void Simplex::MyOctant::ConstructTree(uint a_nMaxLevel)
@@ -117,7 +149,7 @@ void Simplex::MyOctant::AssignIDtoEntity(void)
 
 uint Simplex::MyOctant::GetMyOctantCount(void)
 {
-	return uint();
+	return m_uMyOctantCount;
 }
 
 void Simplex::MyOctant::Release(void)
