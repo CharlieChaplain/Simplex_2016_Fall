@@ -203,6 +203,12 @@ namespace Simplex
 		OUTPUT: ---
 		*/
 		void AssignIDtoEntity(void);
+		/*
+		USAGE: Clears IDs of all entities
+		ARGUMENTS: ---
+		OUTPUT: ---
+		*/
+		void ClearAllEntityIDs(void);
 
 		/*
 		USAGE: Gets the total number of MyOctants in the world

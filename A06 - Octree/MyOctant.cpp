@@ -134,11 +134,26 @@ vector3 Simplex::MyOctant::GetMaxGlobal(void)
 
 bool Simplex::MyOctant::IsColliding(uint a_uRBIndex)
 {
+	vector3 v3Emax, v3Emin;
+	v3Emax = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody()->GetMaxGlobal;
+	v3Emin = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody()->GetMinGlobal;
+	//is this the right check?
+	if ((v3Emin.x <= m_v3Max.x && v3Emax.x >= m_v3Min.x) &&
+		(v3Emin.x <= m_v3Max.x && v3Emax.x >= m_v3Min.x) &&
+		(v3Emin.x <= m_v3Max.x && v3Emax.x >= m_v3Min.x)) {
+		return true;
+	}
+
+	return false;
+
+	/* old code, don't throw out incase I screwed something up
 	if((m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().x >= m_v3Min.x && m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().x < m_v3Max.x) &&
 		(m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().y >= m_v3Min.y && m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().y < m_v3Max.y) &&
 		(m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().z >= m_v3Min.z && m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().z < m_v3Max.z))
 		return true;
 	return false;
+	*/
+	
 }
 
 void Simplex::MyOctant::Display(uint a_nIndex, vector3 a_v3Color)
@@ -254,12 +269,24 @@ void Simplex::MyOctant::ConstructTree(uint a_nMaxLevel)
 	if (a_nMaxLevel <= 1) {
 		return;
 	}
+	//This makes it so that the octree won't subdivide if there isn't enough entities in the octant to subdivide
+	AssignIDtoEntity();
+	if (m_EntityList.size() > m_uIdealEntityCount) {
+		m_EntityList.clear();
+		ClearAllEntityIDs();
+		Subdivide();
+		for (int i = 0; i < 8; i++) {
+			m_pChild[i]->ConstructTree(a_nMaxLevel - 1);
+		}
+		AssignIDtoEntity();
+	}
+	/* Old Code, don't throw out in case something went catastrophically wrong and I didn't catch it
 	Subdivide();
 	for (int i = 0; i < 8; i++) {
 		m_pChild[i]->ConstructTree(a_nMaxLevel - 1);
 	}
-	
 	AssignIDtoEntity();
+	*/
 }
 
 void Simplex::MyOctant::AssignIDtoEntity(void)
@@ -270,11 +297,20 @@ void Simplex::MyOctant::AssignIDtoEntity(void)
 		}
 	}
 	else {
-		for (int i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
+		for (uint i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
 			if (IsColliding(i)) {
 				m_pEntityMngr->GetEntity(i)->AddDimension(m_uID);
+				m_EntityList.push_back(i);
 			}
 		}
+	}
+}
+
+void Simplex::MyOctant::ClearAllEntityIDs(void)
+{
+	for (uint i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
+		m_pEntityMngr->GetEntity(i)->ClearDimensionSet();
+		
 	}
 }
 
@@ -307,8 +343,8 @@ void Simplex::MyOctant::Init(void)
 	m_uMyOctantCount++;
 
 	//really big/small values to find min and max
-	m_v3Max = vector3(-10000000.0f);
-	m_v3Min = vector3(10000000.0f);
+	m_v3Max = vector3(std::numeric_limits<float>::min());
+	m_v3Min = vector3(std::numeric_limits<float>::max());
 
 	//finds min and max points by looking at the farthest entities in the scene
 	for (int i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
