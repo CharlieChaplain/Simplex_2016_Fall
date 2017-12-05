@@ -6,12 +6,13 @@ Date: 2017/07
 #define __MyOctantCLASS_H_
 
 #include "Simplex\Physics\EntityManager.h"
+//#include "MyEntityManager.h"
 
 namespace Simplex
 {
 
 	//System Class
-	class SimplexDLL MyOctant
+	class MyOctant
 	{
 		static uint m_uMyOctantCount; //will store the number of MyOctants instantiated
 		static uint m_uMaxLevel;//will store the maximum level an MyOctant can go to
