@@ -39,6 +39,8 @@ namespace Simplex
 		MyOctant* m_pRoot = nullptr;//Root MyOctant
 		std::vector<MyOctant*> m_lChild; //list of nodes that contain objects (this will be applied to root only)
 
+		bool isSubdivided = false;
+
 	public:
 		/*
 		USAGE: Constructor, will create an MyOctant containing all MagnaEntities Instances in the Mesh

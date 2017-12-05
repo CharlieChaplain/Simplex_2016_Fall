@@ -15,6 +15,7 @@ Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	m_uID = m_uMyOctantCount;
 	m_uMyOctantCount++;
 
+	//really big/small values to find min and max
 	m_v3Max = vector3(-10000000.0f);
 	m_v3Min = vector3(10000000.0f);
 
@@ -36,7 +37,7 @@ Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 			m_v3Min.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
 	}
 
-	m_v3Center = m_v3Max - m_v3Min;
+	m_v3Center = (m_v3Max + m_v3Min) / 2.0f;
 	m_fSize = abs(m_v3Max.x) + abs(m_v3Min.x);
 	m_pRoot = this;
 
@@ -121,12 +122,13 @@ bool Simplex::MyOctant::IsColliding(uint a_uRBIndex)
 
 void Simplex::MyOctant::Display(uint a_nIndex, vector3 a_v3Color)
 {
-	m_pMeshMngr->AddCubeToRenderList(glm::translate(m_v3Center)* glm::scale(vector3(m_fSize)), a_v3Color, 2);
+	//m_pMeshMngr->AddCubeToRenderList(glm::translate(m_v3Center)* glm::scale(vector3(m_fSize)), a_v3Color, 2);
+	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_v3Center) * glm::scale(vector3(m_fSize)), a_v3Color);
 }
 
 void Simplex::MyOctant::Display(vector3 a_v3Color)
 {
-	m_pMeshMngr->AddCubeToRenderList(glm::translate(m_v3Center) * glm::scale(vector3(m_fSize)), a_v3Color, 2);
+	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_v3Center) * glm::scale(vector3(m_fSize)), a_v3Color);
 	if (m_uChildren != 0) {
 		for (int i = 0; i < 8; i++)
 			m_pChild[i]->Display(C_YELLOW);
@@ -153,16 +155,26 @@ void Simplex::MyOctant::Subdivide(void)
 		 6-----5
 	*/
 
+	m_pChild[0] = new MyOctant((m_v3Center + m_v3Max) / 2.0f, m_fSize / 2.0f);
+	m_pChild[1] = new MyOctant((m_v3Center + vector3(m_v3Max.x, m_v3Max.y, m_v3Min.z)) / 2.0f, m_fSize / 2.0f);
+	m_pChild[2] = new MyOctant((m_v3Center + vector3(m_v3Min.x, m_v3Max.y, m_v3Min.z)) / 2.0f, m_fSize / 2.0f);
+	m_pChild[3] = new MyOctant((m_v3Center + vector3(m_v3Min.x, m_v3Max.y, m_v3Max.z)) / 2.0f, m_fSize / 2.0f);
+	m_pChild[4] = new MyOctant((m_v3Center + vector3(m_v3Max.x, m_v3Min.y, m_v3Max.z)) / 2.0f, m_fSize / 2.0f);
+	m_pChild[5] = new MyOctant((m_v3Center + vector3(m_v3Max.x, m_v3Min.y, m_v3Min.z)) / 2.0f, m_fSize / 2.0f);
+	m_pChild[6] = new MyOctant((m_v3Center + m_v3Min) / 2.0f, m_fSize / 2.0f);
+	m_pChild[7] = new MyOctant((m_v3Center + vector3(m_v3Min.x, m_v3Min.y, m_v3Max.z)) / 2.0f, m_fSize / 2.0f);
+
+	/*
 	m_pChild[0] = new MyOctant(m_v3Max - vector3(m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[1] = new MyOctant(m_v3Max - vector3(m_fSize / 4.0f,m_fSize / 4.0f, 3.0f * m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[2] = new MyOctant(m_v3Max - vector3(3.0f * m_fSize / 4.0f, m_fSize / 4.0f, 3.0f * m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[3] = new MyOctant(m_v3Max - vector3(3.0f * m_fSize / 4.0f, m_fSize / 4.0f, m_fSize / 4.0f), m_fSize / 2.0f);
-
+							   
 	m_pChild[4] = new MyOctant(m_v3Max - vector3(m_fSize / 4.0f, 3.0f * m_fSize / 4.0f, m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[5] = new MyOctant(m_v3Max - vector3(m_fSize / 4.0f, 3.0f * m_fSize / 4.0f, 3.0f * m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[6] = new MyOctant(m_v3Max - vector3(3.0f * m_fSize / 4.0f, 3.0f * m_fSize / 4.0f, 3.0f * m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[7] = new MyOctant(m_v3Max - vector3(3.0f * m_fSize / 4.0f, 3.0f * m_fSize / 4.0f, m_fSize / 4.0f), m_fSize / 2.0f);
-
+	*/
 	for (int i = 0; i < 8; i++) {
 		m_pChild[i]->m_pParent = this;
 		m_uChildren++;
@@ -211,11 +223,27 @@ void Simplex::MyOctant::ConstructTree(uint a_nMaxLevel)
 		return;
 	}
 	Subdivide();
-	ConstructTree(a_nMaxLevel - 1);
+	for (int i = 0; i < 8; i++) {
+		m_pChild[i]->ConstructTree(a_nMaxLevel - 1);
+	}
+	
+	AssignIDtoEntity();
 }
 
 void Simplex::MyOctant::AssignIDtoEntity(void)
 {
+	if (m_uChildren != 0) {
+		for (int i = 0; i < 8; i++) {
+			m_pChild[i]->AssignIDtoEntity();
+		}
+	}
+	else {
+		for (int i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
+			if (IsColliding(i)) {
+				m_pEntityMngr->GetEntity(i)->AddDimension(m_uID);
+			}
+		}
+	}
 }
 
 uint Simplex::MyOctant::GetMyOctantCount(void)
