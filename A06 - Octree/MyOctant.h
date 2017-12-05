@@ -60,6 +60,15 @@ namespace Simplex
 		*/
 		MyOctant(vector3 a_v3Center, float a_fSize);
 		/*
+		USAGE: Constructor
+		ARGUMENTS:
+		- vector3 a_v3Max -> max corner of the box
+		- vector3 a_v3Min -> min corner of the box
+		- float a_fSize -> size of each side of the MyOctant volume
+		OUTPUT: class object
+		*/
+		MyOctant(vector3 a_v3Max, vector3 a_v3Min, float a_fSize);
+		/*
 		USAGE: Copy Constructor
 		ARGUMENTS: class object to copy
 		OUTPUT: class object instance

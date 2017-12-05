@@ -26,6 +26,9 @@ class Application
 	uint m_uOctantLevels = 0; //Number of levels in the octree
 
 	MyOctant* m_pRoot = nullptr; //Root node of the octree
+
+	bool displayOctree = true;
+
 private:
 	String m_sProgrammer = "Stephen Callen - src3363@rit.edu"; //programmer
 

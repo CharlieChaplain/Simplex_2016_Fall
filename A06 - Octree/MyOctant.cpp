@@ -12,36 +12,7 @@ Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	m_uMaxLevel = a_nMaxLevel;
 	m_uIdealEntityCount = a_nIdealEntityCount;
 
-	m_uID = m_uMyOctantCount;
-	m_uMyOctantCount++;
-
-	//really big/small values to find min and max
-	m_v3Max = vector3(-10000000.0f);
-	m_v3Min = vector3(10000000.0f);
-
-	//finds min and max points by looking at the farthest entities in the scene
-	for (int i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
-		if (m_pEntityMngr->GetEntity(i)->GetPosition().x > m_v3Max.x)
-			m_v3Max.x = m_pEntityMngr->GetEntity(i)->GetPosition().x;
-		else if (m_pEntityMngr->GetEntity(i)->GetPosition().x < m_v3Min.x)
-			m_v3Min.x = m_pEntityMngr->GetEntity(i)->GetPosition().x;
-
-		if (m_pEntityMngr->GetEntity(i)->GetPosition().y > m_v3Max.y)
-			m_v3Max.y = m_pEntityMngr->GetEntity(i)->GetPosition().y;
-		else if (m_pEntityMngr->GetEntity(i)->GetPosition().y < m_v3Min.y)
-			m_v3Min.y = m_pEntityMngr->GetEntity(i)->GetPosition().y;
-
-		if (m_pEntityMngr->GetEntity(i)->GetPosition().z > m_v3Max.z)
-			m_v3Max.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
-		else if (m_pEntityMngr->GetEntity(i)->GetPosition().z < m_v3Min.z)
-			m_v3Min.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
-	}
-
-	m_v3Center = (m_v3Max + m_v3Min) / 2.0f;
-	m_fSize = abs(m_v3Max.x) + abs(m_v3Min.x);
-	m_pRoot = this;
-
-	ConstructTree(a_nMaxLevel);
+	Init();
 }
 
 Simplex::MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
@@ -58,37 +29,87 @@ Simplex::MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 	m_fSize = a_fSize;
 }
 
+Simplex::MyOctant::MyOctant(vector3 a_v3Max, vector3 a_v3Min, float a_fSize)
+{
+	m_pEntityMngr = EntityManager::GetInstance();
+	m_pMeshMngr = MeshManager::GetInstance();
+
+	m_uID = m_uMyOctantCount;
+	m_uMyOctantCount++;
+
+	m_v3Max = a_v3Max;
+	m_v3Min = a_v3Min;
+	m_v3Center = (a_v3Max + a_v3Min) / 2.0f;
+	m_fSize = a_fSize;
+}
+
 Simplex::MyOctant::MyOctant(MyOctant const & other)
 {
+	m_uID = other.m_uID;
+	m_uLevel = other.m_uLevel;
+	m_uChildren = other.m_uChildren;
+
+	m_fSize = other.m_fSize;
+
+	m_pMeshMngr = other.m_pMeshMngr;
+	m_pEntityMngr = other.m_pEntityMngr;
+	m_v3Center = other.m_v3Center;
+	m_v3Min = other.m_v3Min;
+	m_v3Max = other.m_v3Max;
+
+	m_pParent = other.m_pParent;
+	for(int i = 0; i < m_uChildren; i++)
+		m_pChild[i] = other.m_pChild[i];
+
+	m_EntityList = other.m_EntityList;
+
+	m_pRoot = other.m_pRoot;
+	m_lChild = other.m_lChild;
+
+	isSubdivided = other.isSubdivided;
 }
 
 MyOctant & Simplex::MyOctant::operator=(MyOctant const & other)
 {
+	if (this != &other)
+	{
+		Release();
+		Init();
+		MyOctant temp(other);
+		Swap(temp);
+	}
 	return *this;
 }
 
 Simplex::MyOctant::~MyOctant(void)
 {
-	m_pMeshMngr = nullptr;
-	m_pEntityMngr = nullptr;
-	delete(m_pParent);
-	m_pParent = nullptr;
-	if (m_uChildren != 0) {
-		for (int i = 0; i < m_lChild.size(); i++) {
-			delete(m_pChild[i]);
-			m_pChild[i] = nullptr;
-			delete(m_lChild[i]);
-			m_lChild[i] = nullptr;
-			m_uChildren = 0;
-		}
-	}
-	//delete(m_pRoot);
-	m_pRoot = nullptr;
+	Release();
 	
 }
 
 void Simplex::MyOctant::Swap(MyOctant & other)
 {
+	std::swap(m_uID, other.m_uID);
+	std::swap(m_uLevel, other.m_uLevel);
+	std::swap(m_uChildren, other.m_uChildren);
+	
+	std::swap(m_fSize, other.m_fSize);
+	
+	std::swap(m_pMeshMngr, other.m_pMeshMngr);
+	std::swap(m_pEntityMngr, other.m_pEntityMngr);
+	std::swap(m_v3Center, other.m_v3Center);
+	std::swap(m_v3Min, other.m_v3Min);
+	std::swap(m_v3Max, other.m_v3Max);
+	
+	std::swap(m_pParent, other.m_pParent);
+	std::swap(m_pChild, other.m_pChild);
+	
+	std::swap(m_EntityList, other.m_EntityList);
+	
+	std::swap(m_pRoot, other.m_pRoot);
+	std::swap(m_lChild, other.m_lChild);
+	
+	std::swap(isSubdivided, other.isSubdivided);
 }
 
 float Simplex::MyOctant::GetSize(void)
@@ -155,6 +176,16 @@ void Simplex::MyOctant::Subdivide(void)
 		 6-----5
 	*/
 
+	m_pChild[0] = new MyOctant(m_v3Max, m_v3Center, m_fSize / 2.0f);
+	m_pChild[1] = new MyOctant(vector3(m_v3Max.x, m_v3Max.y, m_v3Center.z), vector3(m_v3Center.x, m_v3Center.y, m_v3Min.z), m_fSize / 2.0f);
+	m_pChild[2] = new MyOctant(vector3(m_v3Center.x, m_v3Max.y, m_v3Center.z), vector3(m_v3Min.x, m_v3Center.y, m_v3Min.z), m_fSize / 2.0f);
+	m_pChild[3] = new MyOctant(vector3(m_v3Center.x, m_v3Max.y, m_v3Max.z), vector3(m_v3Min.x, m_v3Center.y, m_v3Center.z), m_fSize / 2.0f);
+	m_pChild[4] = new MyOctant(vector3(m_v3Max.x, m_v3Center.y, m_v3Max.z), vector3(m_v3Center.x, m_v3Min.y, m_v3Center.z), m_fSize / 2.0f);
+	m_pChild[5] = new MyOctant(vector3(m_v3Max.x, m_v3Center.y, m_v3Center.z), vector3(m_v3Center.x, m_v3Min.y, m_v3Min.z), m_fSize / 2.0f);
+	m_pChild[6] = new MyOctant(m_v3Center, m_v3Min, m_fSize / 2.0f);
+	m_pChild[7] = new MyOctant(vector3(m_v3Center.x, m_v3Center.y, m_v3Max.z), vector3(m_v3Min.x, m_v3Min.y, m_v3Center.z), m_fSize / 2.0f);
+
+	/* Wrong but makes a cool pattern
 	m_pChild[0] = new MyOctant((m_v3Center + m_v3Max) / 2.0f, m_fSize / 2.0f);
 	m_pChild[1] = new MyOctant((m_v3Center + vector3(m_v3Max.x, m_v3Max.y, m_v3Min.z)) / 2.0f, m_fSize / 2.0f);
 	m_pChild[2] = new MyOctant((m_v3Center + vector3(m_v3Min.x, m_v3Max.y, m_v3Min.z)) / 2.0f, m_fSize / 2.0f);
@@ -163,8 +194,9 @@ void Simplex::MyOctant::Subdivide(void)
 	m_pChild[5] = new MyOctant((m_v3Center + vector3(m_v3Max.x, m_v3Min.y, m_v3Min.z)) / 2.0f, m_fSize / 2.0f);
 	m_pChild[6] = new MyOctant((m_v3Center + m_v3Min) / 2.0f, m_fSize / 2.0f);
 	m_pChild[7] = new MyOctant((m_v3Center + vector3(m_v3Min.x, m_v3Min.y, m_v3Max.z)) / 2.0f, m_fSize / 2.0f);
+	*/
 
-	/*
+	/* just wrong
 	m_pChild[0] = new MyOctant(m_v3Max - vector3(m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[1] = new MyOctant(m_v3Max - vector3(m_fSize / 4.0f,m_fSize / 4.0f, 3.0f * m_fSize / 4.0f), m_fSize / 2.0f);
 	m_pChild[2] = new MyOctant(m_v3Max - vector3(3.0f * m_fSize / 4.0f, m_fSize / 4.0f, 3.0f * m_fSize / 4.0f), m_fSize / 2.0f);
@@ -253,10 +285,54 @@ uint Simplex::MyOctant::GetMyOctantCount(void)
 
 void Simplex::MyOctant::Release(void)
 {
+	m_pMeshMngr = nullptr;
+	m_pEntityMngr = nullptr;
+	delete(m_pParent);
+	m_pParent = nullptr;
+	if (m_uChildren != 0) {
+		for (int i = 0; i < m_lChild.size(); i++) {
+			delete(m_pChild[i]);
+			m_pChild[i] = nullptr;
+			delete(m_lChild[i]);
+			m_lChild[i] = nullptr;
+			m_uChildren = 0;
+		}
+	}
+	m_pRoot = nullptr;
 }
 
 void Simplex::MyOctant::Init(void)
 {
+	m_uID = m_uMyOctantCount;
+	m_uMyOctantCount++;
+
+	//really big/small values to find min and max
+	m_v3Max = vector3(-10000000.0f);
+	m_v3Min = vector3(10000000.0f);
+
+	//finds min and max points by looking at the farthest entities in the scene
+	for (int i = 0; i < m_pEntityMngr->GetEntityCount(); i++) {
+		if (m_pEntityMngr->GetEntity(i)->GetPosition().x > m_v3Max.x)
+			m_v3Max.x = m_pEntityMngr->GetEntity(i)->GetPosition().x;
+		else if (m_pEntityMngr->GetEntity(i)->GetPosition().x < m_v3Min.x)
+			m_v3Min.x = m_pEntityMngr->GetEntity(i)->GetPosition().x;
+
+		if (m_pEntityMngr->GetEntity(i)->GetPosition().y > m_v3Max.y)
+			m_v3Max.y = m_pEntityMngr->GetEntity(i)->GetPosition().y;
+		else if (m_pEntityMngr->GetEntity(i)->GetPosition().y < m_v3Min.y)
+			m_v3Min.y = m_pEntityMngr->GetEntity(i)->GetPosition().y;
+
+		if (m_pEntityMngr->GetEntity(i)->GetPosition().z > m_v3Max.z)
+			m_v3Max.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
+		else if (m_pEntityMngr->GetEntity(i)->GetPosition().z < m_v3Min.z)
+			m_v3Min.z = m_pEntityMngr->GetEntity(i)->GetPosition().z;
+	}
+
+	m_v3Center = (m_v3Max + m_v3Min) / 2.0f;
+	m_fSize = abs(m_v3Max.x) + abs(m_v3Min.x);
+	m_pRoot = this;
+
+	ConstructTree(m_uMaxLevel);
 }
 
 void Simplex::MyOctant::ConstructList(void)
