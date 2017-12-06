@@ -4,6 +4,7 @@ using namespace Simplex;
 uint MyOctant::m_uMyOctantCount;
 uint MyOctant::m_uMaxLevel;
 uint MyOctant::m_uIdealEntityCount;
+uint MyOctant::m_uCurrentOctantID;
 
 Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 {
@@ -65,8 +66,6 @@ Simplex::MyOctant::MyOctant(MyOctant const & other)
 
 	m_pRoot = other.m_pRoot;
 	m_lChild = other.m_lChild;
-
-	isSubdivided = other.isSubdivided;
 }
 
 MyOctant & Simplex::MyOctant::operator=(MyOctant const & other)
@@ -108,8 +107,6 @@ void Simplex::MyOctant::Swap(MyOctant & other)
 	
 	std::swap(m_pRoot, other.m_pRoot);
 	std::swap(m_lChild, other.m_lChild);
-	
-	std::swap(isSubdivided, other.isSubdivided);
 }
 
 float Simplex::MyOctant::GetSize(void)
@@ -132,12 +129,18 @@ vector3 Simplex::MyOctant::GetMaxGlobal(void)
 	return m_v3Max;
 }
 
+uint Simplex::MyOctant::GetOctantCount(void)
+{
+	return m_uMyOctantCount;
+}
+
 bool Simplex::MyOctant::IsColliding(uint a_uRBIndex)
 {
+	/* Supposed to check if box is actually colliding with octant via aabb collision detection, but this code tanks performance
 	vector3 v3Emax, v3Emin;
-	v3Emax = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody()->GetMaxGlobal;
-	v3Emin = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody()->GetMinGlobal;
-	//is this the right check?
+	v3Emax = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody()->GetMaxGlobal();
+	v3Emin = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody()->GetMinGlobal();
+	
 	if ((v3Emin.x <= m_v3Max.x && v3Emax.x >= m_v3Min.x) &&
 		(v3Emin.x <= m_v3Max.x && v3Emax.x >= m_v3Min.x) &&
 		(v3Emin.x <= m_v3Max.x && v3Emax.x >= m_v3Min.x)) {
@@ -145,14 +148,14 @@ bool Simplex::MyOctant::IsColliding(uint a_uRBIndex)
 	}
 
 	return false;
-
-	/* old code, don't throw out incase I screwed something up
+	*/
+	//*
 	if((m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().x >= m_v3Min.x && m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().x < m_v3Max.x) &&
 		(m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().y >= m_v3Min.y && m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().y < m_v3Max.y) &&
 		(m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().z >= m_v3Min.z && m_pEntityMngr->GetEntity(a_uRBIndex)->GetPosition().z < m_v3Max.z))
 		return true;
 	return false;
-	*/
+	//*/
 	
 }
 
@@ -173,6 +176,13 @@ void Simplex::MyOctant::Display(vector3 a_v3Color)
 
 void Simplex::MyOctant::DisplayLeafs(vector3 a_v3Color)
 {
+	if (m_uID == m_uCurrentOctantID) {
+		m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_v3Center) * glm::scale(vector3(m_fSize)), a_v3Color);
+	}
+	if (!IsLeaf()) {
+		for (int i = 0; i < 8; i++)
+			m_pChild[i]->DisplayLeafs();
+	}
 }
 
 void Simplex::MyOctant::ClearEntityList(void)
@@ -319,6 +329,16 @@ uint Simplex::MyOctant::GetMyOctantCount(void)
 	return m_uMyOctantCount;
 }
 
+uint Simplex::MyOctant::GetCurrentOctantID(void)
+{
+	return m_uCurrentOctantID;
+}
+
+void Simplex::MyOctant::SetCurrentOctantID(uint a_uID)
+{
+	m_uCurrentOctantID = a_uID;
+}
+
 void Simplex::MyOctant::Release(void)
 {
 	m_pMeshMngr = nullptr;
@@ -335,6 +355,8 @@ void Simplex::MyOctant::Release(void)
 		}
 	}
 	m_pRoot = nullptr;
+	m_uMyOctantCount = 0;
+	m_uCurrentOctantID = -1;
 }
 
 void Simplex::MyOctant::Init(void)

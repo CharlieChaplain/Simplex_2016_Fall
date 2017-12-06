@@ -17,6 +17,7 @@ namespace Simplex
 		static uint m_uMyOctantCount; //will store the number of MyOctants instantiated
 		static uint m_uMaxLevel;//will store the maximum level an MyOctant can go to
 		static uint m_uIdealEntityCount; //will tell how many ideal Entities this object will contain
+		static uint m_uCurrentOctantID;
 
 		uint m_uID = 0; //Will store the current ID for this MyOctant
 		uint m_uLevel = 0; //Will store the current level of the MyOctant
@@ -38,8 +39,6 @@ namespace Simplex
 
 		MyOctant* m_pRoot = nullptr;//Root MyOctant
 		std::vector<MyOctant*> m_lChild; //list of nodes that contain objects (this will be applied to root only)
-
-		bool isSubdivided = false;
 
 	public:
 		/*
@@ -118,6 +117,12 @@ namespace Simplex
 		*/
 		vector3 GetMaxGlobal(void);
 		/*
+		USAGE: Gets the octant count
+		ARGUMENTS: ---
+		OUTPUT: Maximum in global space
+		*/
+		uint GetOctantCount(void);
+		/*
 		USAGE: Asks if there is a collision with the Entity specified by index from
 		the Bounding Object Manager
 		ARGUMENTS:
@@ -141,7 +146,7 @@ namespace Simplex
 		*/
 		void Display(vector3 a_v3Color = C_YELLOW);
 		/*
-		USAGE: Displays the non empty leafs in the octree
+		USAGE: Displays the current ID leaf in the octree
 		ARGUMENTS:
 		- vector3 a_v3Color = REYELLOW -> Color of the volume to display.
 		OUTPUT: ---
@@ -216,6 +221,18 @@ namespace Simplex
 		OUTPUT: ---
 		*/
 		uint GetMyOctantCount(void);
+		/*
+		USAGE: gets the current octant ID
+		ARGUMENTS: ---
+		OUTPUT: the id
+		*/
+		uint GetCurrentOctantID(void);
+		/*
+		USAGE: sets the current octant ID
+		ARGUMENTS: a_uID -> the id
+		OUTPUT: ---
+		*/
+		void SetCurrentOctantID(uint a_uID);
 
 	private:
 		/*

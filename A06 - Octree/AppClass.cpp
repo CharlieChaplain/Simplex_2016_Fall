@@ -60,6 +60,7 @@ void Application::Display(void)
 	//display octree
 	if(displayOctree)
 		m_pRoot->Display(C_YELLOW);
+	m_pRoot->DisplayLeafs();
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
